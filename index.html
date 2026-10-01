@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#7c3aed">
+  <title>How Gay Is Your Energy?</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: linear-gradient(135deg, #fff1f2, #f5f3ff 45%, #ecfeff);
+      color: #18181b;
+    }
+    .card {
+      width: min(680px, 100%);
+      background: rgba(255,255,255,.94);
+      border: 1px solid #e4e4e7;
+      border-radius: 24px;
+      padding: clamp(22px, 5vw, 42px);
+      box-shadow: 0 20px 60px rgba(0,0,0,.10);
+    }
+    .eyebrow { font-size: 12px; font-weight: 800; letter-spacing: .15em; text-transform: uppercase; color: #71717a; }
+    h1, h2 { margin: 10px 0; line-height: 1.15; }
+    h1 { font-size: clamp(30px, 7vw, 46px); }
+    h2 { font-size: clamp(24px, 5vw, 34px); }
+    p { color: #52525b; line-height: 1.6; }
+    input, button {
+      width: 100%;
+      min-height: 50px;
+      border-radius: 14px;
+      font: inherit;
+    }
+    input {
+      margin-top: 8px;
+      padding: 12px 15px;
+      border: 1px solid #d4d4d8;
+      font-size: 16px;
+      background: white;
+    }
+    button {
+      cursor: pointer;
+      border: 0;
+      padding: 13px 16px;
+      font-weight: 750;
+      transition: transform .12s ease, opacity .12s ease, background .12s ease;
+    }
+    button:hover { transform: translateY(-1px); }
+    button:focus-visible, input:focus-visible { outline: 3px solid #c4b5fd; outline-offset: 2px; }
+    .primary { margin-top: 14px; background: #7c3aed; color: white; }
+    .answer {
+      text-align: left;
+      background: #fafafa;
+      border: 1px solid #e4e4e7;
+      color: #27272a;
+    }
+    .answer:hover { background: #f4f4f5; }
+    .answers { display: grid; gap: 10px; margin-top: 22px; }
+    .hidden { display: none !important; }
+    .progress-row { display: flex; justify-content: space-between; gap: 12px; color: #71717a; font-size: 14px; }
+    .track { height: 9px; border-radius: 999px; background: #e4e4e7; overflow: hidden; margin: 8px 0 28px; }
+    .bar { height: 100%; width: 0; background: #7c3aed; transition: width .25s ease; }
+    .result-track { height: 16px; margin-top: 8px; }
+    .result-bar { background: linear-gradient(90deg,#ef4444,#f59e0b,#22c55e,#3b82f6,#8b5cf6); }
+    .center { text-align: center; }
+    .emoji { font-size: 58px; margin-bottom: 8px; }
+    .error { color: #b91c1c; font-size: 14px; }
+    .note { margin-top: 18px; font-size: 12px; color: #71717a; }
+    .meter-label { display: flex; justify-content: space-between; margin-top: 22px; color: #52525b; font-size: 14px; }
+    label { display: block; margin-top: 24px; font-weight: 700; }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <section id="start">
+      <div class="eyebrow">Friendship quiz • 8 questions</div>
+      <h1>🏳️‍🌈 How Gay Is Your Energy?</h1>
+      <p>A completely unserious vibe check to send to your friends. This game does not determine anyone's actual sexual orientation.</p>
+      <label for="name">Your name</label>
+      <input id="name" maxlength="30" autocomplete="off" placeholder="Enter your name">
+      <button id="startBtn" class="primary">Start the vibe check ✨</button>
+      <p id="error" class="error hidden">Enter your name first 😄</p>
+    </section>
+
+    <section id="quiz" class="hidden">
+      <div class="progress-row"><span id="progressText"></span><span id="progressPct"></span></div>
+      <div class="track"><div id="progressBar" class="bar"></div></div>
+      <h2 id="question"></h2>
+      <div id="answers" class="answers"></div>
+    </section>
+
+    <section id="result" class="hidden center">
+      <div id="emoji" class="emoji">✨</div>
+      <div class="eyebrow">Officially unofficial result</div>
+      <h2 id="resultTitle"></h2>
+      <div class="meter-label"><span>Gay energy meter</span><strong id="resultPct"></strong></div>
+      <div class="track result-track"><div id="resultBar" class="bar result-bar"></div></div>
+      <p id="description"></p>
+      <p class="note">For entertainment only — a quiz can't determine anyone's sexual orientation.</p>
+      <button id="restartBtn" class="primary">Play again 🔄</button>
+    </section>
+  </main>
+
+  <script>
+    const questions = [
+      { q: 'Your friend says “I have tea.” What do you do?', a: [['Tell me EVERYTHING. ☕',3],['I am already seated.',2],['Tea? Like… a drink?',0],['Pretend not to care, then ask 12 questions.',2]] },
+      { q: 'Pick your emergency karaoke song.', a: [['Dancing Queen',3],['Since U Been Gone',2],['Bohemian Rhapsody',1],['I refuse to sing in public.',0]] },
+      { q: 'Someone compliments your outfit. Your response?', a: [['“STOPPP, thank you!”',3],['Give them a full outfit breakdown.',2],['“Thanks.”',0],['Compliment them back immediately.',1]] },
+      { q: 'You walk into a room and there is dramatic lighting. What happens?', a: [['Instant photoshoot.',3],['I appreciate the ambience.',2],['Nothing. It is a room.',0],['I suddenly walk like I am in a music video.',3]] },
+      { q: 'Choose a fictional superpower.', a: [['Perfect outfit every single time.',3],['Teleportation.',1],['Reading minds.',1],['Knowing all gossip without being involved.',3]] },
+      { q: 'A friend sends “OMG” with no context.', a: [['Reply “WHAT???” in 0.2 seconds.',3],['Call immediately.',2],['Wait for the next message.',0],['Send “👀”.',2]] },
+      { q: 'How seriously do you take a themed party?', a: [['I become the theme.',3],['Full outfit, obviously.',2],['Maybe one accessory.',1],['Absolutely not.',0]] },
+      { q: 'Final question: someone asks, “Are you gay?” Your quiz answer is…', a: [['Ask the quiz 😌',3],['Wouldn’t you like to know? 👀',2],['No comment.',1],['My actual identity is not decided by this game.',0]] }
+    ];
+
+    const start = document.getElementById('start');
+    const quiz = document.getElementById('quiz');
+    const result = document.getElementById('result');
+    const nameInput = document.getElementById('name');
+    const error = document.getElementById('error');
+    const questionEl = document.getElementById('question');
+    const answersEl = document.getElementById('answers');
+    let index = 0, score = 0, player = '';
+
+    function renderQuestion() {
+      const item = questions[index];
+      const pct = Math.round((index / questions.length) * 100);
+      document.getElementById('progressText').textContent = `Question ${index + 1} of ${questions.length}`;
+      document.getElementById('progressPct').textContent = `${pct}%`;
+      document.getElementById('progressBar').style.width = `${pct}%`;
+      questionEl.textContent = item.q;
+      answersEl.innerHTML = '';
+
+      item.a.forEach(([text, points]) => {
+        const btn = document.createElement('button');
+        btn.className = 'answer';
+        btn.textContent = text;
+        btn.addEventListener('click', () => {
+          score += points;
+          index++;
+          index < questions.length ? renderQuestion() : showResult();
+        });
+        answersEl.appendChild(btn);
+      });
+    }
+
+    function showResult() {
+      quiz.classList.add('hidden');
+      result.classList.remove('hidden');
+      const pct = Math.round((score / (questions.length * 3)) * 100);
+      let emoji, description;
+
+      if (pct <= 20) {
+        emoji = '🧍';
+        description = 'Your vibe is currently giving “I was just invited here.” Extremely calm. Suspiciously calm.';
+      } else if (pct <= 45) {
+        emoji = '✨';
+        description = 'There is a sparkle. Not overwhelming, but definitely detectable by highly trained scientists.';
+      } else if (pct <= 70) {
+        emoji = '💅';
+        description = 'Strong gay-energy readings. You understand drama, presentation, and the importance of receiving the full story.';
+      } else if (pct <= 90) {
+        emoji = '🌈';
+        description = 'The meter is working overtime. You did not enter the vibe check — the vibe check entered you.';
+      } else {
+        emoji = '👑';
+        description = 'MAXIMUM RAINBOW ENERGY. Somewhere, a disco ball just started spinning for absolutely no reason.';
+      }
+
+      document.getElementById('emoji').textContent = emoji;
+      document.getElementById('resultTitle').textContent = `${player}: ${pct}% Gay Energy`;
+      document.getElementById('resultPct').textContent = `${pct}%`;
+      document.getElementById('description').textContent = description;
+      requestAnimationFrame(() => document.getElementById('resultBar').style.width = `${pct}%`);
+    }
+
+    function begin() {
+      player = nameInput.value.trim().slice(0, 30);
+      if (!player) {
+        error.classList.remove('hidden');
+        nameInput.focus();
+        return;
+      }
+      error.classList.add('hidden');
+      index = 0;
+      score = 0;
+      start.classList.add('hidden');
+      result.classList.add('hidden');
+      quiz.classList.remove('hidden');
+      renderQuestion();
+    }
+
+    document.getElementById('startBtn').addEventListener('click', begin);
+    nameInput.addEventListener('keydown', e => { if (e.key === 'Enter') begin(); });
+    document.getElementById('restartBtn').addEventListener('click', () => {
+      index = 0;
+      score = 0;
+      document.getElementById('resultBar').style.width = '0%';
+      result.classList.add('hidden');
+      start.classList.remove('hidden');
+      nameInput.focus();
+    });
+  </script>
+</body>
+</html>
